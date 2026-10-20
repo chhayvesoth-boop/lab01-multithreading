@@ -1,0 +1,12 @@
+Found one Java-level deadlock:
+=============================
+"transfer-0":
+  waiting to lock monitor 0x000002e2ab998780 (object 0x000000f80b5ff010, a bank$Account),
+  which is held by "transfer-1"
+"transfer-1":
+  waiting to lock monitor 0x000002e2ab9991e0 (object 0x000000f80b5ff028, a bank$Account),
+  which is held by "transfer-0"
+
+Java stack information for the threads listed above:
+===================================================
+...
