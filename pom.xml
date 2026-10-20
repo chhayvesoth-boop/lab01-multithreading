@@ -1,4 +1,4 @@
-<!-- <project xmlns="http://maven.apache.org/POM/4.0.0">
+<project xmlns="http://maven.apache.org/POM/4.0.0">
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.itc.se</groupId>
   <artifactId>lab01-multithreading</artifactId>
@@ -15,4 +15,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-</project> -->
+</project>

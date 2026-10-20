@@ -2,7 +2,15 @@ package edu.itc.se.lab01.task4;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class task4 {
 
@@ -98,7 +106,7 @@ public class task4 {
         long t0 = System.nanoTime();
         int ok = 0, failed = 0, timedOut = 0;
         
-        try (pool) { // Auto-shutdown via try-with-resources
+        try (pool) {
             List<Future<String>> futures = new ArrayList<>();
             for (int i = 1; i <= 500; i++) {
                 futures.add(pool.submit(FakeDownload("http://test.com/file-" + i)));

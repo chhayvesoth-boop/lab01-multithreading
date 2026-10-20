@@ -19,19 +19,20 @@ public class TryLockBank {
     static final AtomicInteger retryCount = new AtomicInteger(0);
 
     // FIX B: tryLock with timeouts and random back-off
-    static void transfer(Account from, Account to, long amount) {
-        var rnd = ThreadLocalRandom.current();
+    static boolean transfer(Account from, Account to, long amount) {
+        ThreadLocalRandom rnd = ThreadLocalRandom.current();
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 if (from.lock.tryLock(10, TimeUnit.MILLISECONDS)) {
                     try {
                         if (to.lock.tryLock(10, TimeUnit.MILLISECONDS)) {
                             try {
-                                if (from.balance() >= amount) {
-                                    from.withdraw(amount);
-                                    to.deposit(amount);
+                                if (from.balance() < amount) {
+                                    return false;
                                 }
-                                return; // Success, exit the retry loop
+                                from.withdraw(amount);
+                                to.deposit(amount);
+                                return true;
                             } finally {
                                 to.lock.unlock();
                             }
@@ -50,6 +51,7 @@ public class TryLockBank {
                 Thread.currentThread().interrupt();
             }
         }
+        return false;
     }
 
     public static void main(String[] args) throws InterruptedException {
@@ -61,13 +63,14 @@ public class TryLockBank {
         
         for (int w = 0; w < workers.length; w++) {
             workers[w] = new Thread(() -> {
-                var rnd = ThreadLocalRandom.current();
+                ThreadLocalRandom rnd = ThreadLocalRandom.current();
                 while (!Thread.currentThread().isInterrupted()) {
                     Account a = accounts[rnd.nextInt(accounts.length)];
                     Account b = accounts[rnd.nextInt(accounts.length)];
                     if (a != b) {
-                        transfer(a, b, rnd.nextInt(1, 50));
-                        completedTransfers.incrementAndGet();
+                        if (transfer(a, b, rnd.nextInt(1, 50))) {
+                            completedTransfers.incrementAndGet();
+                        }
                     }
                 }
             }, "transfer-" + w);
@@ -76,7 +79,7 @@ public class TryLockBank {
 
         Thread.sleep(2000);
         for (Thread t : workers) t.interrupt();
-        for (Thread t : workers) t.join(1000);
+        for (Thread t : workers) t.join();
 
         long total = 0; 
         for (Account a : accounts) total += a.balance();
